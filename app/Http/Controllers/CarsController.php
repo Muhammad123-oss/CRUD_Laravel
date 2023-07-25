@@ -8,6 +8,12 @@ use App\Http\Requests\CreateValidationRequest;
 
 class CarsController extends Controller
 {
+    public function __construct(){
+
+        // Without login user can access only index and show page
+        $this->middleware('auth',['except'=>['index','show']]);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -47,23 +53,34 @@ class CarsController extends Controller
      * Whenever we submit a form "store" function of a controller called becuase it has an argument
      * that receive our request.
      */
-    // public function store(Request $request)//Use InCase when we validate using validate()
-    public function store(CreateValidationRequest $request) //Use InCase when we validate using formRequest
+    public function store(Request $request)//Use InCase when we validate using validate()
+    // public function store(CreateValidationRequest $request) //Use InCase when we validate using formRequest
     {
-        $request->validated();//Just use $request->validated() to Validate wherever we want to validate
+        // dd($request->all());
+        // $request->validated();//(form request method to validate)Just use $request->validated() to Validate wherever we want to validate
         /** 
          * To Validate fields before entering data to DB.
          * Validation() use to validate fields. If error occur while validating,
          * it thorw an exception and redirects to previous page
          * */  
         // Use InCase when we validate using validate()
-        // $request->validate([
-        //     // Here we are also applying our own define rule UpperCase
-        //     'name'=>['unique:cars','required',new UpperCase],//Here we specify tableName along with unique. We can also set columnName.
-        //     'founded'=>'required|integer|min:0|max:2023',//Min and Max means we set minimum and maximum value for founded column
-        //     // Here we are also applying our own define rule UpperCase
-        //     'description'=>['required',new UpperCase]
-        // ]);
+        $request->validate([
+            // Here we are also applying our own define rule UpperCase
+            'name'=>['unique:cars','required',new UpperCase],//Here we specify tableName along with unique. We can also set columnName.
+            'founded'=>'required|integer|min:0|max:2023',//Min and Max means we set minimum and maximum value for founded column
+            // Here we are also applying our own define rule UpperCase
+            'description'=>['required',new UpperCase],
+            'image_path'=>'required|mimes:jpg,png,jpeg|max:5048'//Here under 'mimes' we are defining the type of file extensions that are allowed. 
+        ]);
+
+
+        /** 
+         *There might be possibility that different users select same name file. So to avoid file to be saved 
+         with same name in DB we do
+        */
+        $newImageName=time().'-'.$request->name.'.'.$request->image_path->extension();
+        $request->image_path->move(public_path('user_images'),$newImageName);
+        // dd($newImageName);
 
         // To insert data into db without "insert" query
         // $cars=new Cars;
@@ -83,9 +100,11 @@ class CarsController extends Controller
          * But incase of ::make we need save() to insert data into DB.
          */
         $car=Cars::create([
-            'name'=>$request->input('name'),
-            'founded'=>$request->input('founded'),
-            'description'=>$request->input('description')
+            'name'=> $request->input('name'),
+            'founded'=> $request->input('founded'),
+            'description'=> $request->input('description'),
+            'image_path'=> $newImageName,
+            'user_id'=> auth()->user()->id
         ]);
         
         return redirect('/cars');

@@ -15,7 +15,7 @@ class Cars extends Model
     // protected $timestamps=true; //Set it to TRUE if we want to use it
     // protected $dateFormat='h:m:s';//We can use any that are define in PHP
 
-    protected $fillable=['name','founded','description']; //We have to set fillable property in order to insert data using associate array.
+    protected $fillable=['name','founded','description','image_path','user_id']; //We have to set fillable property in order to insert data using associate array.
 
     //One to Many Example
     //hasmany: Means One car(brand) has many models

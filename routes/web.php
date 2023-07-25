@@ -30,3 +30,7 @@ use Illuminate\Support\Facades\Auth;
 
 //A PROJECT
 Route::resource('/cars',CarsController::class);//Remember in "resources" controller we have to pass controller as a string instead as an Array.Means there is no [] with controller arg.
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
